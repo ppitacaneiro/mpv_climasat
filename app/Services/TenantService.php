@@ -53,6 +53,12 @@ class TenantService
                 '--path' => 'database/migrations/tenant',
                 '--force' => true,
             ]);
+
+            // Run tenant seeders
+            \Artisan::call('db:seed', [
+                '--class' => 'Database\\Seeders\\Tenant\\TenantSeeder',
+                '--force' => true,
+            ]);
         });
 
         return $tenant;
