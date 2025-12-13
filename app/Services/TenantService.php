@@ -47,6 +47,14 @@ class TenantService
         
         $tenant->domains()->create(['domain' => $domain]);
 
+        // Run tenant migrations
+        $tenant->run(function () {
+            \Artisan::call('migrate', [
+                '--path' => 'database/migrations/tenant',
+                '--force' => true,
+            ]);
+        });
+
         return $tenant;
     }
 
