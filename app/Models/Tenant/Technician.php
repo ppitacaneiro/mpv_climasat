@@ -27,4 +27,12 @@ class Technician extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    /**
+     * Get the work orders assigned to the technician.
+     */
+    public function workOrders(): HasMany
+    {
+        return $this->hasMany(WorkOrder::class);
+    }
 }

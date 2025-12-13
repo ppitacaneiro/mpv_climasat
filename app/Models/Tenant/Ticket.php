@@ -55,4 +55,12 @@ class Ticket extends Model
     {
         return $this->hasMany(AiDiagnosis::class);
     }
+
+    /**
+     * Get the work orders for the ticket.
+     */
+    public function workOrders(): HasMany
+    {
+        return $this->hasMany(WorkOrder::class);
+    }
 }
