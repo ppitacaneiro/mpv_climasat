@@ -21,6 +21,20 @@ return [
     ],
 
     /**
+     * The base domain for tenant subdomains.
+     * In development: localhost
+     * In production: your-domain.com
+     */
+    'tenant_domain' => env('TENANT_DOMAIN', 'localhost'),
+
+    /**
+     * The base domain for tenant subdomains.
+     * In development: localhost
+     * In production: your-domain.com
+     */
+    'tenant_domain' => env('TENANT_DOMAIN', 'localhost'),
+
+    /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
      * Their responsibility is making Laravel features tenant-aware.
      *
