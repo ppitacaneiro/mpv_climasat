@@ -4,6 +4,7 @@ namespace App\Models\Tenant;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ticket extends Model
 {
@@ -45,5 +46,13 @@ class Ticket extends Model
     public function faultType(): BelongsTo
     {
         return $this->belongsTo(FaultType::class);
+    }
+
+    /**
+     * Get the AI diagnoses for the ticket.
+     */
+    public function aiDiagnoses(): HasMany
+    {
+        return $this->hasMany(AiDiagnosis::class);
     }
 }
