@@ -3,6 +3,7 @@
 namespace App\Models\Tenant;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Technician extends Model
 {
@@ -18,4 +19,12 @@ class Technician extends Model
     protected $casts = [
         'availability' => 'string',
     ];
+
+    /**
+     * Get the tickets assigned to the technician.
+     */
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
 }
