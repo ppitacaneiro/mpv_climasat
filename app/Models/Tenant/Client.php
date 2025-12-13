@@ -24,4 +24,12 @@ class Client extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    /**
+     * Get the invoices for the client.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

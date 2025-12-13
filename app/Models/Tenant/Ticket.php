@@ -63,4 +63,12 @@ class Ticket extends Model
     {
         return $this->hasMany(WorkOrder::class);
     }
+
+    /**
+     * Get the invoices for the ticket.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }
