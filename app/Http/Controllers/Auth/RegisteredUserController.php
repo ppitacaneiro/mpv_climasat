@@ -48,16 +48,13 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Create tenant for the user
-        $this->tenantService->createTenant([
-            'company_name' => $request->company_name,
-            'user_id' => $user->id,
-        ]);
+        // Store company_name temporarily for tenant creation after email verification
+        session(['company_name' => $request->company_name]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('verification.notice', absolute: false));
     }
 }
