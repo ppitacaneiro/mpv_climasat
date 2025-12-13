@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use Illuminate\Support\Str;
 
@@ -31,10 +32,17 @@ class TenantService
         $tenantId = $this->generateUniqueTenantId($data['company_name']);
         $domain = $this->generateUniqueDomain($data['company_name']);
 
+        // Get Demo plan if no subscription_plan_id is provided
+        if (!isset($data['subscription_plan_id'])) {
+            $demoPlan = SubscriptionPlan::where('name', 'Demo')->first();
+            $data['subscription_plan_id'] = $demoPlan?->id;
+        }
+
         $tenant = Tenant::create([
             'id' => $tenantId,
             'company_name' => $data['company_name'],
             'user_id' => $data['user_id'] ?? auth()->id(),
+            'subscription_plan_id' => $data['subscription_plan_id'],
         ]);
         
         $tenant->domains()->create(['domain' => $domain]);

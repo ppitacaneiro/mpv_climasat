@@ -20,6 +20,7 @@ class CreateTenantsTable extends Migration
 
             $table->string('company_name');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('subscription_plan_id')->nullable()->constrained('subscription_plans')->onDelete('set null');
 
             $table->timestamps();
             $table->json('data')->nullable();

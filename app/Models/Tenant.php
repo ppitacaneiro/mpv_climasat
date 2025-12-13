@@ -16,6 +16,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'id',
         'company_name',
         'user_id',
+        'subscription_plan_id',
     ];
 
     /**
@@ -27,6 +28,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return array_merge(parent::getCustomColumns(), [
             'company_name',
             'user_id',
+            'subscription_plan_id',
         ]);
     }
 
@@ -36,5 +38,13 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the subscription plan for the tenant.
+     */
+    public function subscriptionPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class);
     }
 }
