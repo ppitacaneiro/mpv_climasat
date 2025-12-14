@@ -55,7 +55,7 @@ class MailService
     /**
      * Send tenant setup completion email.
      */
-    public function sendTenantSetupEmail(User $user, Tenant $tenant): void
+    public function sendTenantSetupEmail(User $user, Tenant $tenant, string $password): void
     {
         $domain = $tenant->domains->first()?->domain;
         
@@ -63,6 +63,7 @@ class MailService
             'user' => $user,
             'tenant' => $tenant,
             'domain' => $domain,
+            'password' => $password,
             'accessUrl' => $domain ? "http://{$domain}" : null,
         ], function (Message $message) use ($user) {
             $message->to($user->email, $user->name)

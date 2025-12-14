@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class TenantService
 {
@@ -60,6 +62,27 @@ class TenantService
                 '--force' => true,
             ]);
         });
+
+        // Generate random password for tenant admin
+        $password = Str::password(12, true, true, false);
+        
+        // Get the owner user
+        $user = User::find($data['user_id'] ?? auth()->id());
+        
+        // Create admin user in tenant context
+        $tenant->run(function () use ($user, $password) {
+            \App\Models\Tenant\User::create([
+                'name' => $user->name,
+                'email' => $user->email,
+                'password' => Hash::make($password),
+                'role' => 'admin',
+            ]);
+        });
+
+        // Send setup email with credentials
+        if ($user) {
+            app(MailService::class)->sendTenantSetupEmail($user, $tenant, $password);
+        }
 
         return $tenant;
     }
