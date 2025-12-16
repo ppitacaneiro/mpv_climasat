@@ -87,6 +87,8 @@ class TenantService
             // Commit the transaction
             \DB::commit();
 
+            \Log::channel('tenants')->info('Tenant created: ' . $tenant->id, ['data' => $data]);
+
             // Send setup email with credentials
             if ($user) {
                 app(MailService::class)->sendTenantSetupEmail($user, $tenant, $password);
@@ -95,7 +97,7 @@ class TenantService
             return $tenant;
         } catch (\Exception $e) {
             \DB::rollBack();
-            \Log::error("Error creando tenant: " . $e->getMessage(), ['data' => $data]);
+            \Log::channel('tenants')->error('Failed to create tenant: ' . $e->getMessage(), ['data' => $data]);
             throw $e;
         }
     }
