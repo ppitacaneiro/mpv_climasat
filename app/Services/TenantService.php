@@ -31,8 +31,6 @@ class TenantService
      */
     public function createTenant(array $data): Tenant
     {
-        \DB::beginTransaction();
-
         try {
             $tenantId = $this->generateUniqueTenantId($data['company_name']);
             $domain = $this->generateUniqueDomain($data['company_name']);
@@ -84,9 +82,6 @@ class TenantService
                 ]);
             });
 
-            // Commit the transaction
-            \DB::commit();
-
             \Log::channel('tenants')->info('Tenant created: ' . $tenant->id, ['data' => $data]);
 
             // Send setup email with credentials
@@ -96,7 +91,6 @@ class TenantService
 
             return $tenant;
         } catch (\Exception $e) {
-            \DB::rollBack();
             \Log::channel('tenants')->error('Failed to create tenant: ' . $e->getMessage(), ['data' => $data]);
             throw $e;
         }
