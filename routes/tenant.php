@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +24,15 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
+    Route::get('/login', function () {
+        return Inertia::render('Tenant/Auth/Login',[
+            'tenantData' => [
+                'company_name' => tenant('company_name'),
+            ],
+        ]);
+    })->name('tenant.login');
+
     Route::get('/', function () {
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
+        return redirect()->route('tenant.login');
     });
 });
