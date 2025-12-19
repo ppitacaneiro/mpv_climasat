@@ -14,8 +14,10 @@ defineProps({
     status: {
         type: String,
     },
+    companyName: {
+        type: String,
+    },
 });
-const { tenantData } = usePage().props.value || { tenantData: {} };
 const form = useForm({
     email: '',
     password: '',
@@ -33,11 +35,9 @@ const submit = () => {
     <GuestLayout>
         <Head title="Iniciar Sesión" />
 
-        {{ usePage().props.value }}
-
         <div class="mb-6">
             <h3 class="text-2xl font-bold text-gray-800 text-center">
-                Iniciar Sesión - {{ tenantData.company_name || 'Tenant' }}
+                Iniciar Sesión - {{ companyName || 'Tenant' }}
             </h3>
         </div>
 

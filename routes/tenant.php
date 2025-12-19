@@ -26,9 +26,7 @@ Route::middleware([
 ])->group(function () {
     Route::get('/login', function () {
         return Inertia::render('Tenant/Auth/Login',[
-            'tenantData' => [
-                'company_name' => tenant('company_name'),
-            ],
+            'companyName' => tenant('company_name'),
         ]);
     })->name('tenant.login');
 
