@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-use Inertia\Inertia;
+use App\Http\Controllers\Tenant\TenantSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,13 +24,10 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-    Route::get('/login', function () {
-        return Inertia::render('Tenant/Auth/Login',[
-            'companyName' => tenant('company_name'),
-        ]);
-    })->name('tenant.login');
-
     Route::get('/', function () {
-        return redirect()->route('tenant.login');
+        return redirect()->route('tenant.form.login');
     });
+
+    Route::get('/login', [TenantSessionController::class, 'loginForm'])->name('tenant.form.login');
+    Route::post('/login', [TenantSessionController::class, 'login'])->name('tenant.login');
 });
