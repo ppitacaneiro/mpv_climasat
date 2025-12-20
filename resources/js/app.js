@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
+import 'primeicons/primeicons.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
