@@ -62,7 +62,7 @@ Route::middleware([
 
         // Técnicos
         Route::resource('technicians', TechnicianController::class)
-            ->only(['index', 'create', 'store', 'edit', 'update']);
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
         // Tipos de Avería
         Route::resource('fault-types', FaultTypeController::class)

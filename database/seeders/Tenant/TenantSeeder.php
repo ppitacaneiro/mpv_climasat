@@ -16,6 +16,7 @@ class TenantSeeder extends Seeder
 
             // Mock Data Seeders
             ClientSeeder::class,
+            TechnicianSeeder::class,
         ]);
     }
 }

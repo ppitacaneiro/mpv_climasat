@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->enum('availability', ['available', 'busy', 'off'])->default('available');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
