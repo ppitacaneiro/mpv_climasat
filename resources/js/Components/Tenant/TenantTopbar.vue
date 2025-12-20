@@ -1,22 +1,28 @@
 <template>
-  <header class="topbar">
-    <div class="left">
-      <h2>{{ tenantName }}</h2>
+  <header
+    class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-md"
+  >
+    <!-- Left: Tenant Name -->
+    <div class="text-xl font-semibold text-gray-800">
+      {{ tenantName }}
     </div>
 
-    <div class="right">
-      <span class="user-name">{{ user.name }}</span>
+    <!-- Right: User Info -->
+    <div class="flex items-center gap-4 relative">
+      <span class="font-medium text-gray-700">{{ user.name }}</span>
 
       <Avatar
         :label="initials"
         shape="circle"
-        class="avatar"
+        class="bg-blue-600 text-white"
       />
 
       <Menu ref="menu" :model="userMenu" popup />
+
       <Button
         icon="pi pi-chevron-down"
         text
+        class="text-gray-600 hover:text-gray-800"
         @click="toggle"
       />
     </div>
@@ -45,48 +51,11 @@ const initials = computed(() =>
 const menu = ref(null)
 
 const userMenu = [
-  {
-    label: 'Perfil',
-    icon: 'pi pi-user',
-    to: '/profile'
-  },
-  {
-    label: 'Cerrar sesión',
-    icon: 'pi pi-sign-out',
-    command: () => {
-      // logout
-    }
-  }
+  { label: 'Perfil', icon: 'pi pi-user', to: '/profile' },
+  { label: 'Cerrar sesión', icon: 'pi pi-sign-out', command: () => { /* logout */ } }
 ]
 
 const toggle = (event) => {
   menu.value.toggle(event)
 }
 </script>
-
-<style scoped>
-.topbar {
-  height: 64px;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-}
-
-.right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.user-name {
-  font-weight: 500;
-}
-
-.avatar {
-  background: var(--primary-color);
-  color: white;
-}
-</style>
