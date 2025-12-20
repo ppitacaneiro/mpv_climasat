@@ -33,7 +33,13 @@ class ClientController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Tenant/Clients/Create', [
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**
@@ -41,7 +47,19 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:150', 
+            'tax_id' => 'nullable|string|max:50',
+            'contact' => 'required|string|max:150',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+            'address' => 'required|string|max:255',
+            'history' => 'nullable|string',
+        ]);
+
+        \App\Models\Tenant\Client::create($data);
+
+        return redirect()->route('clients.index')->with('success', 'Cliente creado correctamente.');
     }
 
     /**
