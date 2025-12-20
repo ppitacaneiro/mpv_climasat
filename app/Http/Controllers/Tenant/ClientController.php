@@ -94,16 +94,47 @@ class ClientController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return Inertia::render('Tenant/Clients/Edit', [
+            'client' => $this->clientService->find($id),
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreClientRequest $request, string $id)
     {
-        //
+        try {
+            $data = $request->validated();
+            $this->clientService->update($id, $data);
+
+            return redirect()
+                ->route('clients.index')
+                ->with('success', 'Cliente actualizado correctamente.');
+
+        } catch (\Throwable $e) {
+
+            Log::error('Error al actualizar cliente', [
+                'exception' => $e,
+                'tenant' => tenant('id'),
+                'user_id' => auth()->id(),
+                'payload' => $request->validated(),
+                'client_id' => $id,
+            ]);
+
+            return back()
+                ->withErrors([
+                    'general' => 'No se pudo actualizar el cliente. Inténtalo de nuevo.',
+                ])
+                ->withInput();
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.

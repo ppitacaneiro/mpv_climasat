@@ -24,4 +24,18 @@ class ClientService
             return Client::create($data);
         });
     }
+
+    public function find(string $id): ?Client
+    {
+        return Client::findOrFail($id);
+    }
+
+    public function update(string $id, array $data): Client
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $client = Client::findOrFail($id);
+            $client->update($data);
+            return $client;
+        });
+    }
 }
