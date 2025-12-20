@@ -105,7 +105,7 @@ function handleImageError() {
             <div class="grid md:grid-cols-4 gap-10 text-center">
               <div class="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
                 <img
-                  src="https://via.placeholder.com/80"
+                  src="images/clock.jpg"
                   class="mx-auto mb-4"
                   alt="Icono reloj"
                 />
@@ -113,7 +113,7 @@ function handleImageError() {
               </div>
               <div class="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
                 <img
-                  src="https://via.placeholder.com/80"
+                  src="images/error.jpg"
                   class="mx-auto mb-4"
                   alt="Icono error"
                 />

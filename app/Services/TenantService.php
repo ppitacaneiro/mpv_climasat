@@ -31,60 +31,69 @@ class TenantService
      */
     public function createTenant(array $data): Tenant
     {
-        $tenantId = $this->generateUniqueTenantId($data['company_name']);
-        $domain = $this->generateUniqueDomain($data['company_name']);
+        try {
+            $tenantId = $this->generateUniqueTenantId($data['company_name']);
+            $domain = $this->generateUniqueDomain($data['company_name']);
 
-        // Get Demo plan if no subscription_plan_id is provided
-        if (!isset($data['subscription_plan_id'])) {
-            $demoPlan = SubscriptionPlan::where('name', 'Demo')->first();
-            $data['subscription_plan_id'] = $demoPlan?->id;
+            if (!isset($data['subscription_plan_id'])) {
+                $demoPlan = SubscriptionPlan::where('name', 'Demo')->first();
+                if (!$demoPlan) {
+                    throw new \Exception('Demo subscription plan not found.');
+                }
+                $data['subscription_plan_id'] = $demoPlan?->id;
+            }
+
+            $tenant = Tenant::create([
+                'id' => $tenantId,
+                'company_name' => $data['company_name'],
+                'user_id' => $data['user_id'] ?? auth()->id(),
+                'subscription_plan_id' => $data['subscription_plan_id'],
+            ]);
+
+            $tenant->domains()->create(['domain' => $domain]);
+
+            // Run tenant migrations
+            $tenant->run(function () {
+                \Artisan::call('migrate', [
+                    '--path' => 'database/migrations/tenant',
+                    '--force' => true,
+                ]);
+
+                // Run tenant seeders
+                \Artisan::call('db:seed', [
+                    '--class' => 'Database\\Seeders\\Tenant\\TenantSeeder',
+                    '--force' => true,
+                ]);
+            });
+
+            // Generate random password for tenant admin
+            $password = Str::password(12, true, true, false);
+
+            // Get the owner user
+            $user = User::find($data['user_id'] ?? auth()->id());
+
+            // Create admin user in tenant context
+            $tenant->run(function () use ($user, $password) {
+                \App\Models\Tenant\User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => Hash::make($password),
+                    'role' => 'admin',
+                ]);
+            });
+
+            \Log::channel('tenants')->info('Tenant created: ' . $tenant->id, ['data' => $data]);
+
+            // Send setup email with credentials
+            if ($user) {
+                app(MailService::class)->sendTenantSetupEmail($user, $tenant, $password);
+            }
+
+            return $tenant;
+        } catch (\Exception $e) {
+            \Log::channel('tenants')->error('Failed to create tenant: ' . $e->getMessage(), ['data' => $data]);
+            throw $e;
         }
-
-        $tenant = Tenant::create([
-            'id' => $tenantId,
-            'company_name' => $data['company_name'],
-            'user_id' => $data['user_id'] ?? auth()->id(),
-            'subscription_plan_id' => $data['subscription_plan_id'],
-        ]);
-        
-        $tenant->domains()->create(['domain' => $domain]);
-
-        // Run tenant migrations
-        $tenant->run(function () {
-            \Artisan::call('migrate', [
-                '--path' => 'database/migrations/tenant',
-                '--force' => true,
-            ]);
-
-            // Run tenant seeders
-            \Artisan::call('db:seed', [
-                '--class' => 'Database\\Seeders\\Tenant\\TenantSeeder',
-                '--force' => true,
-            ]);
-        });
-
-        // Generate random password for tenant admin
-        $password = Str::password(12, true, true, false);
-        
-        // Get the owner user
-        $user = User::find($data['user_id'] ?? auth()->id());
-        
-        // Create admin user in tenant context
-        $tenant->run(function () use ($user, $password) {
-            \App\Models\Tenant\User::create([
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => Hash::make($password),
-                'role' => 'admin',
-            ]);
-        });
-
-        // Send setup email with credentials
-        if ($user) {
-            app(MailService::class)->sendTenantSetupEmail($user, $tenant, $password);
-        }
-
-        return $tenant;
     }
 
     /**

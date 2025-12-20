@@ -25,10 +25,20 @@ class CreateTenantJob implements ShouldQueue
      */
     public function handle(TenantService $tenantService): void
     {
-        $tenantService->createTenant([
-            'company_name' => $this->companyName,
-            'user_id' => $this->userId,
-            'subscription_plan_id' => $this->subscriptionPlanId,
-        ]);
+        try {
+            $tenantService->createTenant([
+                'company_name' => $this->companyName,
+                'user_id' => $this->userId,
+                'subscription_plan_id' => $this->subscriptionPlanId,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Error creando tenant en job: " . $e->getMessage(), [
+                'company_name' => $this->companyName,
+                'user_id' => $this->userId,
+                'subscription_plan_id' => $this->subscriptionPlanId,
+            ]);
+
+            throw $e;
+        }
     }
 }

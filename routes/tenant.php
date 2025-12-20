@@ -56,4 +56,7 @@ Route::middleware([
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
             ->name('tenant.logout');
     });
+
+    Route::get('/login', [TenantSessionController::class, 'loginForm'])->name('tenant.form.login');
+    Route::post('/login', [TenantSessionController::class, 'login'])->name('tenant.login');
 });
