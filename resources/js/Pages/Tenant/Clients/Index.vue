@@ -23,6 +23,14 @@
         />
       </div>
 
+      <div v-if="$page.props.flash?.success" class="mb-4 p-3 rounded bg-green-100 text-green-800">
+        {{ $page.props.flash.success }}
+      </div>
+
+      <div v-if="$page.props.flash?.error" class="mb-4 p-3 rounded bg-red-100 text-red-800">
+        {{ $page.props.flash.error }}
+      </div>
+
       <!-- DataTable -->
       <DataTable
         :value="clients.data"
