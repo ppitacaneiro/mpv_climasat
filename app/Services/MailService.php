@@ -10,49 +10,6 @@ use Illuminate\Mail\Message;
 class MailService
 {
     /**
-     * Send welcome email to new user after registration.
-     */
-    public function sendWelcomeEmail(User $user, Tenant $tenant): void
-    {
-        Mail::send('emails.welcome', [
-            'user' => $user,
-            'tenant' => $tenant,
-            'domain' => $tenant->domains->first()->domain ?? null,
-        ], function (Message $message) use ($user) {
-            $message->to($user->email, $user->name)
-                    ->subject('Bienvenido a ClimaSAT');
-        });
-    }
-
-    /**
-     * Send email verification.
-     */
-    public function sendVerificationEmail(User $user, string $verificationUrl): void
-    {
-        Mail::send('emails.verify', [
-            'user' => $user,
-            'verificationUrl' => $verificationUrl,
-        ], function (Message $message) use ($user) {
-            $message->to($user->email, $user->name)
-                    ->subject('Verifica tu dirección de email');
-        });
-    }
-
-    /**
-     * Send password reset email.
-     */
-    public function sendPasswordResetEmail(User $user, string $resetUrl): void
-    {
-        Mail::send('emails.password-reset', [
-            'user' => $user,
-            'resetUrl' => $resetUrl,
-        ], function (Message $message) use ($user) {
-            $message->to($user->email, $user->name)
-                    ->subject('Restablecer tu contraseña');
-        });
-    }
-
-    /**
      * Send tenant setup completion email.
      */
     public function sendTenantSetupEmail(User $user, Tenant $tenant, string $password): void
