@@ -38,4 +38,12 @@ class ClientService
             return $client;
         });
     }
+
+    public function delete(string $id): void
+    {
+        DB::transaction(function () use ($id) {
+            $client = Client::findOrFail($id);
+            $client->delete();
+        });
+    }
 }

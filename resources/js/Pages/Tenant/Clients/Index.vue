@@ -74,6 +74,7 @@
         </Column>
       </DataTable>
     </div>
+    <ConfirmDialog />
   </TenantLayout>
 </template>
 
@@ -86,6 +87,8 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from "primevue/useconfirm";
 
 const props = defineProps({
   clients: { type: Object, required: true },
@@ -96,6 +99,8 @@ const props = defineProps({
 
 /* Search */
 const search = ref(props.filters.search ?? '')
+
+const confirm = useConfirm()
 
 watch(search, (value) => {
   router.visit(route('clients.index'), {
@@ -117,11 +122,18 @@ const onPage = (event) => {
 
 /* Confirmar eliminación */
 const confirmDelete = (id) => {
-  if (confirm('¿Estás seguro de eliminar este cliente?')) {
-    router.delete(route('clients.destroy', id), {
-      preserveState: true,
-      preserveScroll: true
-    })
-  }
+  confirm.require({
+    message: '¿Estás seguro de eliminar este cliente?',
+    header: 'Confirmar eliminación',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí, eliminar',
+    rejectLabel: 'Cancelar',
+    accept: () => {
+      router.delete(route('clients.destroy', id), {
+        preserveState: true,
+        preserveScroll: true
+      })
+    }
+  })
 }
 </script>

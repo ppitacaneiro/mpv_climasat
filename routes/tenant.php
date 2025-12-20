@@ -58,7 +58,7 @@ Route::middleware([
 
         // Clientes
         Route::resource('clients', ClientController::class)
-            ->only(['index', 'create', 'store', 'edit', 'update']);
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
         // Técnicos
         Route::resource('technicians', TechnicianController::class)

@@ -141,6 +141,26 @@ class ClientController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $this->clientService->delete($id);
+
+            return redirect()
+                ->route('clients.index')
+                ->with('success', 'Cliente eliminado correctamente.');
+
+        } catch (\Throwable $e) {
+
+            Log::error('Error al eliminar cliente', [
+                'exception' => $e,
+                'tenant' => tenant('id'),
+                'user_id' => auth()->id(),
+                'client_id' => $id,
+            ]);
+
+            return back()
+                ->withErrors([
+                    'general' => 'No se pudo eliminar el cliente. Inténtalo de nuevo.',
+                ]);
+        }
     }
 }

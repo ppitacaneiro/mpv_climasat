@@ -8,6 +8,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
 import 'primeicons/primeicons.css';
+import ConfirmationService from 'primevue/confirmationservice';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -34,6 +35,7 @@ createInertiaApp({
                     }
                 }
             })
+            .use(ConfirmationService)
             .mount(el);
     },
     progress: {
