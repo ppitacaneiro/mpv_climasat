@@ -13,7 +13,9 @@ class TenantSeeder extends Seeder
     {
         $this->call([
             FaultTypeSeeder::class,
-            // Add more tenant seeders here
+
+            // Mock Data Seeders
+            ClientSeeder::class,
         ]);
     }
 }

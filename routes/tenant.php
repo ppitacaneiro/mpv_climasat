@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Tenant\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-use Inertia\Inertia;
+
+use App\Http\Controllers\Tenant\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\ClientController;
+use App\Http\Controllers\Tenant\TechnicianController;
+use App\Http\Controllers\Tenant\FaultTypeController;
+use App\Http\Controllers\Tenant\TicketController;
+use App\Http\Controllers\Tenant\WorkOrderController;
+use App\Http\Controllers\Tenant\InvoiceController;
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Routes
 |--------------------------------------------------------------------------
-|
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
-|
-| Feel free to customize them however you want. Good luck!
-|
 */
 
 Route::middleware([
@@ -25,32 +27,58 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-    // Guest Routes (sin autenticación)
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guest Routes
+    |--------------------------------------------------------------------------
+    */
     Route::middleware('guest')->group(function () {
-        // Ruta principal del tenant - muestra login
+
         Route::get('/', [AuthenticatedSessionController::class, 'create'])
             ->name('tenant.home');
-        
-        // Login
+
         Route::get('/login', [AuthenticatedSessionController::class, 'create'])
             ->name('tenant.login');
-        
+
         Route::post('/login', [AuthenticatedSessionController::class, 'store'])
             ->name('tenant.login.store');
     });
 
-    // Authenticated Routes (requieren autenticación)
+    /*
+    |--------------------------------------------------------------------------
+    | Authenticated Tenant Routes
+    |--------------------------------------------------------------------------
+    */
     Route::middleware('auth')->group(function () {
+
         // Dashboard
-        Route::get('/dashboard', function () {
-            return Inertia::render('Tenant/Dashboard', [
-                'tenant' => [
-                    'id' => tenant('id'),
-                    'name' => tenant('name') ?? 'Tenant',
-                ],
-                'user' => auth()->user(),
-            ]);
-        })->name('tenant.dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('tenant.dashboard');
+
+        // Clientes
+        Route::resource('clients', ClientController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update']);
+
+        // Técnicos
+        Route::resource('technicians', TechnicianController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update']);
+
+        // Tipos de Avería
+        Route::resource('fault-types', FaultTypeController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update']);
+
+        // Tickets
+        Route::resource('tickets', TicketController::class)
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+
+        // Partes de Trabajo
+        Route::resource('work-orders', WorkOrderController::class)
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+
+        // Facturas
+        Route::resource('invoices', InvoiceController::class)
+            ->only(['index', 'create', 'store', 'show']);
 
         // Logout
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
