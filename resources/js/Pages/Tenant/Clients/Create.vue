@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, router } from '@inertiajs/vue3'
 import TenantLayout from '@/Layouts/TenantLayout.vue'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -29,66 +29,98 @@ const submit = () => {
 </script>
 
 <template>
-  <TenantLayout :tenant="tenant" :user="user">
-    <div class="max-w-2xl mx-auto p-4 bg-white rounded shadow">
-        <h1 class="text-xl font-semibold mb-4">Nuevo Cliente</h1>
+    <TenantLayout :tenant="tenant" :user="user">
+        <!-- Card -->
+        <div class="max-w-2xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
+            <h1 class="text-2xl font-semibold mb-6 text-gray-800">
+                Nuevo Cliente
+            </h1>
 
-        <form @submit.prevent="submit" class="space-y-4">
-            <!-- Nombre obligatorio -->
-            <div>
-                <label class="block mb-1">Nombre <span class="text-red-500">*</span></label>
-                <InputText v-model="form.name" class="w-full" />
-                <span v-if="form.errors.name" class="text-red-500 text-sm">{{ form.errors.name }}</span>
+            <div v-if="form.errors.general" class="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-red-700">
+                {{ form.errors.general }}
             </div>
 
-            <!-- CIF / NIF opcional -->
-            <div>
-                <label class="block mb-1">CIF / NIF</label>
-                <InputText v-model="form.tax_id" class="w-full" />
-                <span v-if="form.errors.tax_id" class="text-red-500 text-sm">{{ form.errors.tax_id }}</span>
-            </div>
+            <form @submit.prevent="submit" class="space-y-5">
+                <!-- Nombre -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Nombre <span class="text-red-500">*</span>
+                    </label>
+                    <InputText v-model="form.name" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <span v-if="form.errors.name" class="text-red-500 text-sm">
+                        {{ form.errors.name }}
+                    </span>
+                </div>
 
-            <!-- Contacto obligatorio -->
-            <div>
-                <label class="block mb-1">Persona de contacto <span class="text-red-500">*</span></label>
-                <InputText v-model="form.contact" class="w-full" />
-                <span v-if="form.errors.contact" class="text-red-500 text-sm">{{ form.errors.contact }}</span>
-            </div>
+                <!-- CIF / NIF -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        CIF / NIF
+                    </label>
+                    <InputText v-model="form.tax_id" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                </div>
 
-            <!-- Teléfono opcional -->
-            <div>
-                <label class="block mb-1">Teléfono</label>
-                <InputText v-model="form.phone" class="w-full" />
-                <span v-if="form.errors.phone" class="text-red-500 text-sm">{{ form.errors.phone }}</span>
-            </div>
+                <!-- Contacto -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Persona de contacto <span class="text-red-500">*</span>
+                    </label>
+                    <InputText v-model="form.contact" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <span v-if="form.errors.contact" class="text-red-500 text-sm">
+                        {{ form.errors.contact }}
+                    </span>
+                </div>
 
-            <!-- Email opcional -->
-            <div>
-                <label class="block mb-1">Email</label>
-                <InputText v-model="form.email" class="w-full" />
-                <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
-            </div>
+                <!-- Teléfono -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Teléfono
+                    </label>
+                    <InputText v-model="form.phone" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                </div>
 
-            <!-- Dirección obligatoria -->
-            <div>
-                <label class="block mb-1">Dirección <span class="text-red-500">*</span></label>
-                <Textarea v-model="form.address" rows="3" class="w-full" />
-                <span v-if="form.errors.address" class="text-red-500 text-sm">{{ form.errors.address }}</span>
-            </div>
+                <!-- Email -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Email
+                    </label>
+                    <InputText v-model="form.email" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                </div>
 
-            <!-- Historial opcional -->
-            <div>
-                <label class="block mb-1">Historial</label>
-                <Textarea v-model="form.history" rows="4" class="w-full" />
-                <span v-if="form.errors.history" class="text-red-500 text-sm">{{ form.errors.history }}</span>
-            </div>
+                <!-- Dirección -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Dirección <span class="text-red-500">*</span>
+                    </label>
+                    <Textarea v-model="form.address" rows="3" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <span v-if="form.errors.address" class="text-red-500 text-sm">
+                        {{ form.errors.address }}
+                    </span>
+                </div>
 
-            <!-- Botones -->
-            <div class="flex justify-end gap-2 mt-4">
-                <Button label="Cancelar" text @click="$router.back()" />
-                <Button label="Guardar" type="submit" :loading="form.processing" />
-            </div>
-        </form>
-    </div>
-  </TenantLayout>
+                <!-- Historial -->
+                <div>
+                    <label class="block mb-1 font-medium text-gray-700">
+                        Historial
+                    </label>
+                    <Textarea v-model="form.history" rows="4" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                </div>
+
+                <!-- Botones -->
+                <div class="flex justify-end gap-3 pt-4">
+                    <Button label="Cancelar" class="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        @click="router.visit(route('clients.index'))" />
+                    <Button label="Guardar" type="submit" :loading="form.processing"
+                        class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 shadow-md" />
+                </div>
+            </form>
+        </div>
+    </TenantLayout>
 </template>

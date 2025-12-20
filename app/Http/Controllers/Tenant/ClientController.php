@@ -6,25 +6,33 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tenant\Client;
 use Inertia\Inertia;
+use App\Http\Requests\Tenant\StoreClientRequest;
+use App\Services\Tenant\ClientService;
+use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
+    public function __construct(private ClientService $clientService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $clients = Client::query()
-            ->search($request->get('search'))
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $clients = $this->clientService->index($request->get('search'));
 
         return Inertia::render('Tenant/Clients/Index', [
             'clients' => $clients,
             'filters' => [
                 'search' => $request->get('search'),
             ],
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
         ]);
     }
 
@@ -45,21 +53,32 @@ class ClientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreClientRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:150', 
-            'tax_id' => 'nullable|string|max:50',
-            'contact' => 'required|string|max:150',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-            'address' => 'required|string|max:255',
-            'history' => 'nullable|string',
-        ]);
+        try {
+            $data = $request->validated();
 
-        \App\Models\Tenant\Client::create($data);
+            $this->clientService->create($data);
 
-        return redirect()->route('clients.index')->with('success', 'Cliente creado correctamente.');
+            return redirect()
+                ->route('clients.index')
+                ->with('success', 'Cliente creado correctamente.');
+
+        } catch (Throwable $e) {
+
+            Log::error('Error al crear cliente', [
+                'exception' => $e,
+                'tenant' => tenant('id'),
+                'user_id' => auth()->id(),
+                'payload' => $request->validated(),
+            ]);
+
+            return back()
+                ->withErrors([
+                    'general' => 'No se pudo crear el cliente. Inténtalo de nuevo.',
+                ])
+                ->withInput();
+        }
     }
 
     /**
