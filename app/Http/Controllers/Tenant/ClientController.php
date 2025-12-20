@@ -64,7 +64,7 @@ class ClientController extends Controller
                 ->route('clients.index')
                 ->with('success', 'Cliente creado correctamente.');
 
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
 
             Log::error('Error al crear cliente', [
                 'exception' => $e,
