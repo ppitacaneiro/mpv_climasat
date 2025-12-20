@@ -10,30 +10,47 @@
 
 <script setup>
 import Menu from 'primevue/menu'
+import { router } from '@inertiajs/vue3'
+
+const go = (routeName) => {
+  router.visit(route(routeName))
+}
 
 const items = [
   {
     label: 'Dashboard',
     icon: 'pi pi-home',
-    to: '/dashboard'
+    command: () => go('tenant.dashboard')
   },
   {
-    label: 'Pacientes',
-    icon: 'pi pi-users',
-    to: '/patients'
+    label: 'Clientes',
+    icon: 'pi pi-building',
+    command: () => go('clients.index')
   },
   {
-    label: 'Citas',
-    icon: 'pi pi-calendar',
-    to: '/appointments'
+    label: 'Técnicos',
+    icon: 'pi pi-user',
+    command: () => go('technicians.index')
   },
   {
-    separator: true
+    label: 'Tipo de Avería',
+    icon: 'pi pi-wrench',
+    command: () => go('fault-types.index')
   },
   {
-    label: 'Configuración',
-    icon: 'pi pi-cog',
-    to: '/settings'
+    label: 'Tickets',
+    icon: 'pi pi-ticket',
+    command: () => go('tickets.index')
+  },
+  {
+    label: 'Partes de Trabajo',
+    icon: 'pi pi-clipboard',
+    command: () => go('work-orders.index')
+  },
+  {
+    label: 'Facturas',
+    icon: 'pi pi-file',
+    command: () => go('invoices.index')
   }
 ]
 </script>
