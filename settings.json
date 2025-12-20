@@ -1,0 +1,37 @@
+{
+  // Formateo automático al guardar
+  "editor.formatOnSave": true,
+
+  // Tamaño de tabulación
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // Formato específico por lenguaje
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer"
+  },
+
+  // Linters y warnings
+  "eslint.validate": ["javascript", "javascriptreact", "vue", "typescript"],
+  "vetur.validation.template": true,
+  "vetur.validation.style": true,
+  "vetur.validation.script": true
+}
