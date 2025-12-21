@@ -40,7 +40,7 @@ class CreateDemoTenant extends Command
             $tenant = $tenantService->createTenant([
                 'company_name' => 'Demo Company',
                 'user_id' => $userDemo->id,
-                'twilio_number' => '+1 (415) 523-8886',
+                'twilio_number' => '+14155238886',
             ]);
             $this->info("Demo tenant created with ID: {$tenant->id}");
         } catch (\Exception $e) {
