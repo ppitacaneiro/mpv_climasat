@@ -341,17 +341,29 @@ php artisan test
 php artisan test --coverage
 ```
 
-## Licencia
+## Configuración básica Twilio y ngrok (desarrollo local)
 
-Proyecto propietario. Todos los derechos reservados.
+- Para pruebas locales con WhatsApp:
 
+# Twilio:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- ** Regístrate y crea un Sandbox de WhatsApp.
+- ** Obtén Account SID y Auth Token.
+- ** Anota tu número de Sandbox: whatsapp:+14155238886.
+- ** Vincula tu WhatsApp de pruebas siguiendo las instrucciones del Sandbox.
 
-## Security Vulnerabilities
+# Ngrok:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Instala ngrok y ejecuta:
 
-## License
+```bash
+php artisan serve
+ngrok http 8000
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Obtendrás una URL pública tipo https://xyz.ngrok-free.dev.
+
+Configura esta URL en el Sandbox de WhatsApp como webhook:
+
+When a message comes in (POST):
+https://xyz.ngrok-free.dev/twilio/webhook
