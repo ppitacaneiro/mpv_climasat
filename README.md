@@ -367,3 +367,7 @@ Configura esta URL en el Sandbox de WhatsApp como webhook:
 
 When a message comes in (POST):
 https://xyz.ngrok-free.dev/twilio/webhook
+
+## Creación de Demo tenant
+
+- php artisan app:create-demo-tenant
