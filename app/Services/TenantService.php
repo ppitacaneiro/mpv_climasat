@@ -98,6 +98,15 @@ class TenantService
     }
 
     /**
+     * Find a tenant by twilio_number.
+     */
+    public function findTenantByTwilioNumber(string $twilioNumber): ?Tenant
+    {
+        $twilioNumber = str_replace('whatsapp:', '', $twilioNumber);
+        return Tenant::where('twilio_number', $twilioNumber)->first();
+    }
+
+    /**
      * Update an existing tenant.
      */
     public function updateTenant(Tenant $tenant, array $data): Tenant

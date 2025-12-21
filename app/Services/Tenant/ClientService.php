@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class ClientService
 {
+    use \App\Traits\PhoneNormalization;
+
     public function index($search = null)
     {
         $clients = Client::query()
@@ -20,6 +22,8 @@ class ClientService
 
     public function create(array $data): Client
     {
+        $data['phone'] = $this->normalizePhone($data['phone']);
+
         return DB::transaction(function () use ($data) {
             return Client::create($data);
         });
@@ -30,8 +34,17 @@ class ClientService
         return Client::findOrFail($id);
     }
 
+    public function findByPhone(string $phone): ?Client
+    {
+        return Client::where('phone', $phone)->first();
+    }
+
     public function update(string $id, array $data): Client
     {
+        if (isset($data['phone'])) {
+            $data['phone'] = $this->normalizePhone($data['phone']);
+        }
+
         return DB::transaction(function () use ($id, $data) {
             $client = Client::findOrFail($id);
             $client->update($data);
