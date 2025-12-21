@@ -17,6 +17,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'company_name',
         'user_id',
         'subscription_plan_id',
+        'twilio_number',
     ];
 
     /**
@@ -29,6 +30,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'company_name',
             'user_id',
             'subscription_plan_id',
+            'twilio_number',
         ]);
     }
 

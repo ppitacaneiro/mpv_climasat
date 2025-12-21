@@ -48,6 +48,7 @@ class TenantService
                 'company_name' => $data['company_name'],
                 'user_id' => $data['user_id'] ?? auth()->id(),
                 'subscription_plan_id' => $data['subscription_plan_id'],
+                'twilio_number' => $data['twilio_number'] ?? null,
             ]);
 
             $tenant->domains()->create(['domain' => $domain]);

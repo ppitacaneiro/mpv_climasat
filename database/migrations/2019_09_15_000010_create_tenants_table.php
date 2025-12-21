@@ -18,6 +18,7 @@ class CreateTenantsTable extends Migration
         Schema::create('tenants', function (Blueprint $table) {
             $table->string('id')->primary();
 
+            $table->string('twilio_number')->nullable();
             $table->string('company_name');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('subscription_plan_id')->nullable()->constrained('subscription_plans')->onDelete('set null');
