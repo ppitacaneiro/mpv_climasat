@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name', 150);
             $table->string('tax_id', 50)->nullable();
-            $table->string('contact', 150);
-            $table->string('phone', 20)->nullable();
+            $table->string('contact', 150)->nullable();
+            $table->string('phone', 20);
             $table->string('email', 100)->nullable();
-            $table->string('address', 255);
+            $table->string('address', 255)->nullable();
             $table->text('history')->nullable();
             $table->timestamps();
             $table->softDeletes();

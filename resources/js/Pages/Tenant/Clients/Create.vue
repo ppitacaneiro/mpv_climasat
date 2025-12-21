@@ -65,22 +65,22 @@ const submit = () => {
                 <!-- Contacto -->
                 <div>
                     <label class="block mb-1 font-medium text-gray-700">
-                        Persona de contacto <span class="text-red-500">*</span>
+                        Persona de contacto
                     </label>
                     <InputText v-model="form.contact" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
                    focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    <span v-if="form.errors.contact" class="text-red-500 text-sm">
-                        {{ form.errors.contact }}
-                    </span>
                 </div>
 
                 <!-- Teléfono -->
                 <div>
                     <label class="block mb-1 font-medium text-gray-700">
-                        Teléfono
+                        Teléfono <span class="text-red-500">*</span>
                     </label>
                     <InputText v-model="form.phone" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
                    focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                   <span v-if="form.errors.phone" class="text-red-500 text-sm">
+                        {{ form.errors.phone }}
+                    </span>
                 </div>
 
                 <!-- Email -->
@@ -95,13 +95,10 @@ const submit = () => {
                 <!-- Dirección -->
                 <div>
                     <label class="block mb-1 font-medium text-gray-700">
-                        Dirección <span class="text-red-500">*</span>
+                        Dirección 
                     </label>
                     <Textarea v-model="form.address" rows="3" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
                    focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    <span v-if="form.errors.address" class="text-red-500 text-sm">
-                        {{ form.errors.address }}
-                    </span>
                 </div>
 
                 <!-- Historial -->
