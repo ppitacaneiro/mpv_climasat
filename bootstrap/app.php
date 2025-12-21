@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Exclude Twilio webhook from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            '/twilio/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
