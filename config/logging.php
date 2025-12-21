@@ -131,6 +131,12 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
+        'whatsapp_ticket' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsapp_ticket.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
     ],
 
 ];

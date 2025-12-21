@@ -37,26 +37,25 @@ class TwilioService
         
         $tenant = $this->tenantService->findTenantByTwilioNumber($to);
         if (!$tenant) {
-            \Log::warning("No tenant found for Twilio number: $to");
+            \Log::channel('whatsapp_ticket')->warning("No tenant found for Twilio number: $to");
             return;
         }
 
         tenancy()->initialize($tenant);
 
         $client = $this->clientService->findByPhone($from);
-        \Log::info("Searching for client with phone: $from");
+        \Log::channel('whatsapp_ticket')->info("Processing message from $from for tenant {$tenant->id}");
         if (!$client) {
             $clientData = [
                 'name'  => $profileName,
                 'phone' => $from,
             ];
             $client = $this->clientService->create($clientData);
-            \Log::info("Created new client: {$client->id} for tenant: {$tenant->id}");
+            \Log::channel('whatsapp_ticket')->info("Created new client: {$client->id} for tenant: {$tenant->id}");
         }
 
         $aiResult = $this->openAIService->generarTicketHVAC($body);
-        \Log::info('AI HVAC result', $aiResult);
-
+        \Log::channel('whatsapp_ticket')->info('AI HVAC result', $aiResult);
         $ticketData = [
             'client_id'  => $client->id,
             'description'=> $body,
@@ -64,7 +63,7 @@ class TwilioService
             'urgency'    => 'medium',
         ];
         $this->ticketService->create($ticketData);
-        \Log::info("Created new ticket for client: {$client->id} in tenant: {$tenant->id}");
+        \Log::channel('whatsapp_ticket')->info("Created new ticket for client: {$client->id} in tenant: {$tenant->id}");
 
         if (!empty($aiResult['pregunta_siguiente'])) {
             $message = "Hola {$client->name}, para poder ayudarte mejor necesito saber lo siguiente:\n\n"
@@ -77,9 +76,9 @@ class TwilioService
         $sent = $this->sendWhatsAppMessageToClient($client, $tenant, $message);
 
         if (!$sent) {
-            \Log::warning("El mensaje a {$client->phone} no se pudo enviar, revisar Twilio o configuración del tenant {$tenant->id}");
+            \Log::channel('whatsapp_ticket')->warning("El mensaje a {$client->phone} no se pudo enviar, revisar Twilio o configuración del tenant {$tenant->id}");
         } else {
-            \Log::info("Mensaje enviado correctamente a {$client->phone}");
+            \Log::channel('whatsapp_ticket')->info("Mensaje enviado correctamente a {$client->phone}");
         }
 
     }   
@@ -106,7 +105,7 @@ class TwilioService
                 ]
             );
 
-            \Log::info("Sent WhatsApp message to client {$client->id}", [
+            \Log::channel('whatsapp_ticket')->info("Sent WhatsApp message to client {$client->id}", [
                 'to' => $toNumber,
                 'from' => $fromNumber,
                 'body' => $message,
@@ -114,7 +113,7 @@ class TwilioService
 
             return true;
         } catch (\Exception $e) {
-            \Log::error("Failed to send WhatsApp message to {$toNumber} from number {$fromNumber}: " . $e->getMessage());
+            \Log::channel('whatsapp_ticket')->error("Failed to send WhatsApp message to {$toNumber} from number {$fromNumber}: " . $e->getMessage());
             return false;
         }
     }
