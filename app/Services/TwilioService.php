@@ -7,6 +7,7 @@ use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
 use App\Models\Tenant\Client;
 use App\Models\Tenant;
+use App\Services\OpenAIService;
 
 class TwilioService
 {
@@ -17,7 +18,8 @@ class TwilioService
     public function __construct(
         private TenantService $tenantService,
         private ClientService $clientService,
-        private TicketService $ticketService
+        private TicketService $ticketService,
+        private OpenAIService $openAIService
     )
     {
         $this->client = new \Twilio\Rest\Client(
@@ -52,6 +54,9 @@ class TwilioService
             \Log::info("Created new client: {$client->id} for tenant: {$tenant->id}");
         }
 
+        $aiResult = $this->openAIService->generarTicketHVAC($body);
+        \Log::info('AI HVAC result', $aiResult);
+
         $ticketData = [
             'client_id'  => $client->id,
             'description'=> $body,
@@ -61,7 +66,14 @@ class TwilioService
         $this->ticketService->create($ticketData);
         \Log::info("Created new ticket for client: {$client->id} in tenant: {$tenant->id}");
 
-        $message = "Hola {$client->name}, hemos recibido tu mensaje y hemos creado un ticket para ti. Nos pondremos en contacto pronto.";
+        if (!empty($aiResult['pregunta_siguiente'])) {
+            $message = "Hola {$client->name}, para poder ayudarte mejor necesito saber lo siguiente:\n\n"
+                    . $aiResult['pregunta_siguiente']
+                    . "\n\n✋ Puedes escribir *terminar* en cualquier momento.";
+        } else {
+            $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
+                    . "Un técnico se pondrá en contacto contigo en breve.";
+        }
         $sent = $this->sendWhatsAppMessageToClient($client, $tenant, $message);
 
         if (!$sent) {
