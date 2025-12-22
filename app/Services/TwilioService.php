@@ -19,7 +19,8 @@ class TwilioService
         private TenantService $tenantService,
         private ClientService $clientService,
         private TicketService $ticketService,
-        private OpenAIService $openAIService
+        private OpenAIService $openAIService,
+        private IncomingMessageService $incomingMessageService
     )
     {
         $this->client = new \Twilio\Rest\Client(
@@ -42,6 +43,11 @@ class TwilioService
         }
 
         tenancy()->initialize($tenant);
+
+        if ($this->incomingMessageService->isProcessed($payload['MessageSid'])) {
+            \Log::channel('whatsapp_ticket')->info("Message {$payload['MessageSid']} already processed for tenant {$tenant->id}");
+            return;
+        }
 
         $client = $this->clientService->findByPhone($from);
         \Log::channel('whatsapp_ticket')->info("Processing message from $from for tenant {$tenant->id}");
@@ -81,6 +87,13 @@ class TwilioService
             \Log::channel('whatsapp_ticket')->info("Mensaje enviado correctamente a {$client->phone}");
         }
 
+        $this->incomingMessageService->markAsProcessed(
+            $tenant->id,
+            $payload['MessageSid'],
+            $from,
+            $to,
+            $body
+        );
     }   
 
     /**

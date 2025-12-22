@@ -49,4 +49,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return $this->belongsTo(SubscriptionPlan::class);
     }
+
+    public function incomingMessages()
+    {
+        return $this->hasMany(IncomingMessage::class);
+    }
 }
