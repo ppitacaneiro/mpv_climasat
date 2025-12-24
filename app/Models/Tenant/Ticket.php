@@ -71,4 +71,12 @@ class Ticket extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * Get the AI messages for the ticket.
+     */
+    public function aiMessages(): HasMany
+    {
+        return $this->hasMany(TicketAiMessage::class);
+    }
 }
