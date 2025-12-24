@@ -26,6 +26,7 @@ class TwilioWebhookRequest extends FormRequest
             'To'         => 'required|string',
             'Body'       => 'required|string',
             'MessageSid' => 'required|string',
+            'ProfileName' => 'sometimes|string',
         ];
     }
 
