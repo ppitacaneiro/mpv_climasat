@@ -90,4 +90,15 @@ class TicketService
         $ticket->save();
         return $ticket;
     }
+
+    /**
+     * Obtener ticket abierto de un cliente
+     *
+     * @param Client $client
+     * @return Ticket|null
+     */
+    public function getOpenTicketForClient(Client $client): ?Ticket
+    {
+        return $client->tickets()->where('status', 'open')->first();
+    }
 }

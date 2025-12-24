@@ -6,6 +6,7 @@ use App\Services\TenantService;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
 use App\Models\Tenant\Client;
+use App\Models\Tenant\TicketAiMessage;
 use App\Models\Tenant;
 use App\Services\OpenAIService;
 
@@ -13,7 +14,7 @@ class TwilioService
 {
     use \App\Traits\PhoneNormalization;
 
-    protected $client;
+    protected \Twilio\Rest\Client $twilio;
 
     public function __construct(
         private TenantService $tenantService,
@@ -21,9 +22,8 @@ class TwilioService
         private TicketService $ticketService,
         private OpenAIService $openAIService,
         private IncomingMessageService $incomingMessageService
-    )
-    {
-        $this->client = new \Twilio\Rest\Client(
+    ) {
+        $this->twilio = new \Twilio\Rest\Client(
             config('services.twilio.sid'),
             config('services.twilio.token')
         );
@@ -31,62 +31,92 @@ class TwilioService
 
     public function handleIncomingWhatsAppMessage(array $payload): void
     {
-        $to = $payload['To'];
-        $from = $this->normalizePhone($payload['From']);
-        $body = $payload['Body'];
+        $to          = $payload['To'];
+        $from        = $this->normalizePhone($payload['From']);
+        $body        = trim($payload['Body']);
         $profileName = $payload['ProfileName'] ?? 'Nuevo Cliente';
-        
+
+        // 1️⃣ Resolver tenant (DB CENTRAL)
         $tenant = $this->tenantService->findTenantByTwilioNumber($to);
         if (!$tenant) {
-            \Log::channel('whatsapp_ticket')->warning("No tenant found for Twilio number: $to");
+            \Log::channel('whatsapp_ticket')->warning("No tenant found for Twilio number: {$to}");
+            return;
+        }
+
+        // 2️⃣ Evitar duplicados
+        if ($this->incomingMessageService->isProcessed($payload['MessageSid'])) {
             return;
         }
 
         tenancy()->initialize($tenant);
 
-        if ($this->incomingMessageService->isProcessed($payload['MessageSid'])) {
-            \Log::channel('whatsapp_ticket')->info("Message {$payload['MessageSid']} already processed for tenant {$tenant->id}");
-            return;
+        try {
+            // 3️⃣ Cliente
+            $client = $this->clientService->findByPhone($from);
+
+            if (!$client) {
+                $client = $this->clientService->create([
+                    'name'  => $profileName,
+                    'phone' => $from,
+                ]);
+            }
+
+            // 4️⃣ Ticket abierto (UNO SOLO)
+            $ticket = $this->ticketService->getOpenTicketForClient($client);
+
+            if (!$ticket) {
+                $ticket = $this->ticketService->create([
+                    'client_id'   => $client->id,
+                    'description' => $body,
+                    'status'      => 'open',
+                    'urgency'     => 'medium',
+                ]);
+            }
+
+            // 5️⃣ Guardar mensaje usuario
+            TicketAiMessage::create([
+                'ticket_id' => $ticket->id,
+                'role'      => 'user',
+                'content'   => $body,
+            ]);
+
+            // 6️⃣ Construir contexto (últimos mensajes)
+            $conversation = TicketAiMessage::where('ticket_id', $ticket->id)
+                ->orderBy('id')
+                ->limit(10)
+                ->get()
+                ->map(fn ($m) => "{$m->role}: {$m->content}")
+                ->implode("\n");
+
+            // 7️⃣ Llamar IA CON CONTEXTO
+            $aiResult = $this->openAIService->generarTicketHVAC($conversation);
+
+            // 8️⃣ Guardar respuesta IA
+            TicketAiMessage::create([
+                'ticket_id' => $ticket->id,
+                'role'      => 'assistant',
+                'content'   => json_encode($aiResult, JSON_UNESCAPED_UNICODE),
+            ]);
+
+            // 9️⃣ Responder al cliente
+            if ($aiResult['pregunta_siguiente'] === null) {
+                $ticket->update(['status' => 'in_progress']);
+
+                $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
+                         . "Un técnico se pondrá en contacto contigo en breve.";
+            } else {
+                $message = "Hola {$client->name}, para ayudarte mejor necesito saber lo siguiente:\n\n"
+                         . $aiResult['pregunta_siguiente']
+                         . "\n\n✋ Puedes escribir *terminar* en cualquier momento.";
+            }
+
+            $this->sendWhatsAppMessageToClient($client, $tenant, $message);
+
+        } finally {
+            tenancy()->end();
         }
 
-        $client = $this->clientService->findByPhone($from);
-        \Log::channel('whatsapp_ticket')->info("Processing message from $from for tenant {$tenant->id}");
-        if (!$client) {
-            $clientData = [
-                'name'  => $profileName,
-                'phone' => $from,
-            ];
-            $client = $this->clientService->create($clientData);
-            \Log::channel('whatsapp_ticket')->info("Created new client: {$client->id} for tenant: {$tenant->id}");
-        }
-
-        $aiResult = $this->openAIService->generarTicketHVAC($body);
-        \Log::channel('whatsapp_ticket')->info('AI HVAC result', $aiResult);
-        $ticketData = [
-            'client_id'  => $client->id,
-            'description'=> $body,
-            'status'     => 'open',
-            'urgency'    => 'medium',
-        ];
-        $this->ticketService->create($ticketData);
-        \Log::channel('whatsapp_ticket')->info("Created new ticket for client: {$client->id} in tenant: {$tenant->id}");
-
-        if (!empty($aiResult['pregunta_siguiente'])) {
-            $message = "Hola {$client->name}, para poder ayudarte mejor necesito saber lo siguiente:\n\n"
-                    . $aiResult['pregunta_siguiente']
-                    . "\n\n✋ Puedes escribir *terminar* en cualquier momento.";
-        } else {
-            $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
-                    . "Un técnico se pondrá en contacto contigo en breve.";
-        }
-        $sent = $this->sendWhatsAppMessageToClient($client, $tenant, $message);
-
-        if (!$sent) {
-            \Log::channel('whatsapp_ticket')->warning("El mensaje a {$client->phone} no se pudo enviar, revisar Twilio o configuración del tenant {$tenant->id}");
-        } else {
-            \Log::channel('whatsapp_ticket')->info("Mensaje enviado correctamente a {$client->phone}");
-        }
-
+        // 🔟 Marcar mensaje como procesado (DB CENTRAL)
         $this->incomingMessageService->markAsProcessed(
             $tenant->id,
             $payload['MessageSid'],
@@ -94,39 +124,25 @@ class TwilioService
             $to,
             $body
         );
-    }   
+    }
 
     /**
-     * Enviar mensaje de WhatsApp a un cliente
-     *
-     * @param Client $client
-     * @param string $message
-     * @param string|null $from Número Twilio del tenant, si no se pasa se toma el default
-     * @return void
+     * Enviar mensaje de WhatsApp
      */
     public function sendWhatsAppMessageToClient(Client $client, Tenant $tenant, string $message): bool
     {
-        $toNumber = 'whatsapp:+' . $client->phone;
-        $fromNumber = 'whatsapp:' . $tenant->twilio_number; 
-
-        try {        
-            $this->client->messages->create(
-                $toNumber,
+        try {
+            $this->twilio->messages->create(
+                'whatsapp:+' . $client->phone,
                 [
-                    'from' => $fromNumber,
+                    'from' => 'whatsapp:' . $tenant->twilio_number,
                     'body' => $message,
                 ]
             );
 
-            \Log::channel('whatsapp_ticket')->info("Sent WhatsApp message to client {$client->id}", [
-                'to' => $toNumber,
-                'from' => $fromNumber,
-                'body' => $message,
-            ]);
-
             return true;
-        } catch (\Exception $e) {
-            \Log::channel('whatsapp_ticket')->error("Failed to send WhatsApp message to {$toNumber} from number {$fromNumber}: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::channel('whatsapp_ticket')->error($e->getMessage());
             return false;
         }
     }
