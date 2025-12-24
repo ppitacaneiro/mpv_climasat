@@ -10,7 +10,7 @@ class IncomingMessageService
         return IncomingMessage::where('message_sid', $messageSid)->exists();
     }
 
-    public function markAsProcessed(int $tenantId,
+    public function markAsProcessed(string $tenantId,
         string $messageSid,
         string $from,
         string $to,
