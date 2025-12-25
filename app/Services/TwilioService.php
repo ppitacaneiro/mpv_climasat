@@ -36,7 +36,6 @@ class TwilioService
         $body        = trim($payload['Body']);
         $profileName = $payload['ProfileName'] ?? 'Nuevo Cliente';
 
-        // Resolver tenant (DB CENTRAL)
         $tenant = $this->tenantService->findTenantByTwilioNumber($to);
         if (!$tenant) {
             \Log::channel('whatsapp_ticket')->warning("No tenant found for Twilio number: {$to}");
@@ -45,8 +44,6 @@ class TwilioService
 
         tenancy()->initialize($tenant);
 
-       
-        // Cliente
         $client = $this->clientService->findByPhone($from);
         if (!$client) {
             $client = $this->clientService->create([
@@ -55,7 +52,6 @@ class TwilioService
             ]);
         }
 
-        // Ticket abierto (UNO SOLO)
         $ticket = $this->ticketService->getOpenTicketForClient($client);
         if (!$ticket) {
             $ticket = $this->ticketService->create([
@@ -78,34 +74,16 @@ class TwilioService
             return;
         }
 
-        // Guardar mensaje usuario
-        TicketAiMessage::create([
-            'ticket_id' => $ticket->id,
-            'role'      => 'user',
-            'content'   => $body,
-        ]);
+        $this->ticketService->createIaMessage($ticket, 'user', $body);
 
-        //Construir contexto (últimos mensajes)
-        $conversation = TicketAiMessage::where('ticket_id', $ticket->id)
-            ->orderBy('id')
-            ->limit(10)
-            ->get()
-            ->map(fn ($m) => "{$m->role}: {$m->content}")
-            ->implode("\n");
+        $conversation = $this->ticketService->getLastIaMessages($ticket, 10);
         \Log::channel('whatsapp_ticket')->info("Contexto conversación para ticket {$ticket->id}:\n{$conversation}");
 
-        // Llamar IA CON CONTEXTO
         $aiResult = $this->openAIService->generarTicketHVAC($conversation);
         \Log::channel('whatsapp_ticket')->info("Respuesta IA para ticket {$ticket->id}:\n" . json_encode($aiResult));
 
-        // Guardar respuesta IA
-        TicketAiMessage::create([
-            'ticket_id' => $ticket->id,
-            'role'      => 'assistant',
-            'content' => $aiResult['pregunta_siguiente'] ?? 'Diagnóstico completo'
-        ]);
-
-        // Responder al cliente
+        $this->ticketService->createIaMessage($ticket, 'assistant', $aiResult['pregunta_siguiente'] ?? 'Diagnóstico completo');
+        
         if ($aiResult['pregunta_siguiente'] === null) {
             $ticket->update(['status' => 'in_progress']);
 

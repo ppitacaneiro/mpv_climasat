@@ -7,6 +7,7 @@ use App\Models\Tenant\Client;
 use App\Models\Tenant\Technician;
 use App\Models\Tenant\FaultType;
 use Illuminate\Support\Collection;
+use App\Models\Tenant\TicketAiMessage;
 
 class TicketService
 {
@@ -100,5 +101,24 @@ class TicketService
     public function getOpenTicketForClient(Client $client): ?Ticket
     {
         return $client->tickets()->where('status', 'open')->first();
+    }
+
+    public function createIaMessage(Ticket $ticket, string $role, string $content)
+    {
+        return TicketAiMessage::create([
+            'ticket_id' => $ticket->id,
+            'role'      => $role,
+            'content'   => $content,
+        ]);
+    }
+
+    public function getLastIaMessages(Ticket $ticket, int $limit = 10)
+    {
+        return TicketAiMessage::where('ticket_id', $ticket->id)
+            ->orderBy('id')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($m) => "{$m->role}: {$m->content}")
+            ->implode("\n");
     }
 }
