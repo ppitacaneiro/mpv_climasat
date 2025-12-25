@@ -5,6 +5,8 @@ namespace App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\TicketStatus;
+use App\Enums\TicketUrgency;
 
 class Ticket extends Model
 {
@@ -21,10 +23,25 @@ class Ticket extends Model
     ];
 
     protected $casts = [
-        'status' => 'string',
-        'urgency' => 'string',
+        'status' => TicketStatus::class,
+        'urgency' => TicketUrgency::class,
         'closed_at' => 'datetime',
     ];
+
+    protected $appends = [
+        'status_label',
+        'urgency_label'
+    ];
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status->label();
+    }
+
+    public function getUrgencyLabelAttribute(): string
+    {
+        return $this->urgency->label();
+    }
 
     /**
      * Get the client that owns the ticket.
