@@ -1,14 +1,13 @@
 <template>
-  {{ props.tickets }}
   <TenantLayout :tenant="tenant" :user="user">
     <div>
       <!-- Header -->
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-xl font-semibold">Clientes</h1>
+        <h1 class="text-xl font-semibold">Tickets</h1>
 
-        <!-- Nuevo cliente -->
+        <!-- Nuevo ticket -->
         <Button
-          label="Nuevo cliente"
+          label="Nuevo ticket"
           icon="pi pi-plus"
           class="bg-blue-600 text-white hover:bg-blue-700 px-5 py-2 rounded-md shadow-md"
           @click="router.visit(route('tickets.create'))"
