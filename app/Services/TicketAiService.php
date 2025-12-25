@@ -5,9 +5,6 @@ namespace App\Services;
 use App\Services\TenantService;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
-use App\Models\Tenant\Client;
-use App\Models\Tenant\TicketAiMessage;
-use App\Models\Tenant;
 use App\Services\OpenAIService;
 use Illuminate\Support\Facades\Log;
 
