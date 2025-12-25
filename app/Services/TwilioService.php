@@ -36,94 +36,88 @@ class TwilioService
         $body        = trim($payload['Body']);
         $profileName = $payload['ProfileName'] ?? 'Nuevo Cliente';
 
-        // 1️⃣ Resolver tenant (DB CENTRAL)
+        // Resolver tenant (DB CENTRAL)
         $tenant = $this->tenantService->findTenantByTwilioNumber($to);
         if (!$tenant) {
             \Log::channel('whatsapp_ticket')->warning("No tenant found for Twilio number: {$to}");
             return;
         }
 
-        // 2️⃣ Evitar duplicados
-        if ($this->incomingMessageService->isProcessed($payload['MessageSid'])) {
+        tenancy()->initialize($tenant);
+
+       
+        // Cliente
+        $client = $this->clientService->findByPhone($from);
+        if (!$client) {
+            $client = $this->clientService->create([
+                'name'  => $profileName,
+                'phone' => $from,
+            ]);
+        }
+
+        // Ticket abierto (UNO SOLO)
+        $ticket = $this->ticketService->getOpenTicketForClient($client);
+        if (!$ticket) {
+            $ticket = $this->ticketService->create([
+                'client_id'   => $client->id,
+                'description' => $body,
+                'status'      => 'open',
+                'urgency'     => 'medium',
+            ]);
+        }
+
+        if (strtolower($body) === 'terminar') {
+            $ticket->update(['status' => 'in_progress']);
+
+            $this->sendWhatsAppMessageToClient(
+                $client,
+                $tenant,
+                "Perfecto {$client->name}, pasamos tu caso a un técnico. ¡Gracias!"
+            );
+
             return;
         }
 
-        tenancy()->initialize($tenant);
+        // Guardar mensaje usuario
+        TicketAiMessage::create([
+            'ticket_id' => $ticket->id,
+            'role'      => 'user',
+            'content'   => $body,
+        ]);
 
-        try {
-            // 3️⃣ Cliente
-            $client = $this->clientService->findByPhone($from);
+        //Construir contexto (últimos mensajes)
+        $conversation = TicketAiMessage::where('ticket_id', $ticket->id)
+            ->orderBy('id')
+            ->limit(10)
+            ->get()
+            ->map(fn ($m) => "{$m->role}: {$m->content}")
+            ->implode("\n");
+        \Log::channel('whatsapp_ticket')->info("Contexto conversación para ticket {$ticket->id}:\n{$conversation}");
 
-            if (!$client) {
-                $client = $this->clientService->create([
-                    'name'  => $profileName,
-                    'phone' => $from,
-                ]);
-            }
+        // Llamar IA CON CONTEXTO
+        $aiResult = $this->openAIService->generarTicketHVAC($conversation);
+        \Log::channel('whatsapp_ticket')->info("Respuesta IA para ticket {$ticket->id}:\n" . json_encode($aiResult));
 
-            // 4️⃣ Ticket abierto (UNO SOLO)
-            $ticket = $this->ticketService->getOpenTicketForClient($client);
+        // Guardar respuesta IA
+        TicketAiMessage::create([
+            'ticket_id' => $ticket->id,
+            'role'      => 'assistant',
+            'content' => $aiResult['pregunta_siguiente'] ?? 'Diagnóstico completo'
+        ]);
 
-            if (!$ticket) {
-                $ticket = $this->ticketService->create([
-                    'client_id'   => $client->id,
-                    'description' => $body,
-                    'status'      => 'open',
-                    'urgency'     => 'medium',
-                ]);
-            }
+        // Responder al cliente
+        if ($aiResult['pregunta_siguiente'] === null) {
+            $ticket->update(['status' => 'in_progress']);
 
-            // 5️⃣ Guardar mensaje usuario
-            TicketAiMessage::create([
-                'ticket_id' => $ticket->id,
-                'role'      => 'user',
-                'content'   => $body,
-            ]);
-
-            // 6️⃣ Construir contexto (últimos mensajes)
-            $conversation = TicketAiMessage::where('ticket_id', $ticket->id)
-                ->orderBy('id')
-                ->limit(10)
-                ->get()
-                ->map(fn ($m) => "{$m->role}: {$m->content}")
-                ->implode("\n");
-
-            // 7️⃣ Llamar IA CON CONTEXTO
-            $aiResult = $this->openAIService->generarTicketHVAC($conversation);
-
-            // 8️⃣ Guardar respuesta IA
-            TicketAiMessage::create([
-                'ticket_id' => $ticket->id,
-                'role'      => 'assistant',
-                'content'   => json_encode($aiResult, JSON_UNESCAPED_UNICODE),
-            ]);
-
-            // 9️⃣ Responder al cliente
-            if ($aiResult['pregunta_siguiente'] === null) {
-                $ticket->update(['status' => 'in_progress']);
-
-                $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
-                         . "Un técnico se pondrá en contacto contigo en breve.";
-            } else {
-                $message = "Hola {$client->name}, para ayudarte mejor necesito saber lo siguiente:\n\n"
-                         . $aiResult['pregunta_siguiente']
-                         . "\n\n✋ Puedes escribir *terminar* en cualquier momento.";
-            }
-
-            $this->sendWhatsAppMessageToClient($client, $tenant, $message);
-
-        } finally {
-            tenancy()->end();
+            $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
+                        . "Un técnico se pondrá en contacto contigo en breve.";
+        } else {
+            $message = "Hola {$client->name}, para ayudarte mejor necesito saber lo siguiente:\n\n"
+                        . $aiResult['pregunta_siguiente']
+                        . "\n\n✋ Puedes escribir *terminar* en cualquier momento.";
         }
 
-        // 🔟 Marcar mensaje como procesado (DB CENTRAL)
-        $this->incomingMessageService->markAsProcessed(
-            $tenant->id,
-            $payload['MessageSid'],
-            $from,
-            $to,
-            $body
-        );
+        $this->sendWhatsAppMessageToClient($client, $tenant, $message);
     }
 
     /**
