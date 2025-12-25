@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Tenant\FaultType;
 use App\Services\TenantService;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
 use App\Services\OpenAIService;
 use Illuminate\Support\Facades\Log;
+use App\Services\TwilioService;
+use App\Services\Tenant\FaultTypeService;
 
 class TicketAiService
 {
@@ -15,10 +18,10 @@ class TicketAiService
         private ClientService $clientService,
         private TicketService $ticketService,
         private OpenAIService $openAIService,
-        private TwilioService $twilioService
+        private TwilioService $twilioService,
+        private FaultTypeService $faultTypeService
     )
-    {
-    }
+    {}
 
     public function processIncomingWhatsAppMessage(array $payload): void
     {
@@ -72,13 +75,21 @@ class TicketAiService
             $conversation = $this->ticketService->getLastIaMessages($ticket, 10);
             Log::channel('whatsapp_ticket')->info("Contexto conversación para ticket {$ticket->id}:\n{$conversation}");
 
-            $aiResult = $this->openAIService->generarTicketHVAC($conversation);
+            $aiResult = $this->openAIService->generateHVACTicket($conversation);
             Log::channel('whatsapp_ticket')->info("Respuesta IA para ticket {$ticket->id}:\n" . json_encode($aiResult));
 
             $this->ticketService->createIaMessage($ticket, 'assistant', $aiResult['pregunta_siguiente'] ?? 'Diagnóstico completo');
             
             if ($aiResult['pregunta_siguiente'] === null) {
-                $ticket->update(['status' => 'in_progress']);
+                $faultTypes = $this->faultTypeService->getAll()->map(fn ($ft) => "{$ft->id}: {$ft->name}")->toArray();
+                $conversationEnded = $this->ticketService->getLastIaMessages($ticket, 10);
+                $iaTicketData = $this->openAIService->clasifyTicket($conversationEnded, $faultTypes);
+                $this->ticketService->update($ticket, [
+                    'fault_type_id'         => $iaTicketData['tipo_averia_id'] ?? null,
+                    'urgency'               => $iaTicketData['nivel_urgencia'] ?? 'medium',
+                    'suggested_ia_solution' => $iaTicketData['solucion_sugerida'] ?? null,
+                    'status'                => 'in_progress',
+                ]);
 
                 $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
                             . "Un técnico se pondrá en contacto contigo en breve.";
