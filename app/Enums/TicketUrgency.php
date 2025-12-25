@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+// TODO: Implement ticket urgency avoiding hardcoded strings in the codebase, including migrations and seeders.
 enum TicketUrgency: string
 {
     case LOW = 'low';

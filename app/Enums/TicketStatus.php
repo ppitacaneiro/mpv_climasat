@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+// TODO: Implement ticket status avoiding hardcoded strings in the codebase, including migrations and seeders.
 enum TicketStatus: string
 {
     case OPEN = 'open';
