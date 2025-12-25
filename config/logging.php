@@ -126,13 +126,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
         'tenants' => [
-            'driver' => 'daily',
+            'driver' => 'single',
             'path' => storage_path('logs/tenants.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
         'whatsapp_ticket' => [
-            'driver' => 'daily',
+            'driver' => 'single',
             'path' => storage_path('logs/whatsapp_ticket.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
