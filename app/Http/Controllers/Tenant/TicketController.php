@@ -3,16 +3,35 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\Ticket;
+use App\Services\Tenant\TicketService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TicketController extends Controller
 {
+    public function __construct(private TicketService $ticketService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $tickets = $this->ticketService->index($request->get('search'));
+
+        return Inertia::render('Tenant/Tickets/Index', [
+            'tickets' => $tickets,
+            'filters' => [
+                'search' => $request->get('search'),
+            ],
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**

@@ -11,6 +11,18 @@ use App\Models\Tenant\TicketAiMessage;
 
 class TicketService
 {
+    public function index(?string $search = null)
+    {
+        $tickets = Ticket::query()
+            ->with(['client', 'technician', 'faultType'])
+            ->when($search, fn($query) => $query->search($search))
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return $tickets;
+    }
+
     /**
      * Crear un nuevo ticket
      *
