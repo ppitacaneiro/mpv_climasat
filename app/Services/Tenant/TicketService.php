@@ -103,6 +103,14 @@ class TicketService
         return $client->tickets()->where('status', 'open')->first();
     }
 
+    /**
+     * Crear mensaje IA para un ticket
+     *
+     * @param Ticket $ticket
+     * @param string $role
+     * @param string $content
+     * @return TicketAiMessage
+     */
     public function createIaMessage(Ticket $ticket, string $role, string $content)
     {
         return TicketAiMessage::create([
@@ -112,6 +120,13 @@ class TicketService
         ]);
     }
 
+    /**
+     * Obtener últimos mensajes IA de un ticket
+     *
+     * @param Ticket $ticket
+     * @param int $limit
+     * @return string
+     */
     public function getLastIaMessages(Ticket $ticket, int $limit = 10)
     {
         return TicketAiMessage::where('ticket_id', $ticket->id)
