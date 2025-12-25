@@ -9,6 +9,11 @@ class ClientService
 {
     use \App\Traits\PhoneNormalization;
 
+    public function getAll()
+    {
+        return Client::orderBy('name')->get();
+    }
+
     public function index($search = null)
     {
         $clients = Client::query()

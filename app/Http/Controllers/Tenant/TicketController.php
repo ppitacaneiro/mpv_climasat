@@ -11,10 +11,15 @@ use App\Models\Tenant\Client;
 use App\Models\Tenant\FaultType;
 use App\Enums\TicketStatus;
 use App\Enums\TicketUrgency;
+use App\Services\Tenant\ClientService;
+use App\Services\Tenant\FaultTypeService;
 
 class TicketController extends Controller
 {
-    public function __construct(private TicketService $ticketService)
+    public function __construct(
+        private TicketService $ticketService,
+        private ClientService $clientService,
+        private FaultTypeService $faultTypeService)
     {
     }
 
@@ -43,9 +48,18 @@ class TicketController extends Controller
      */
     public function create()
     {
+        $clients = $this->clientService->getAll()->map(fn($client) => [
+            'id' => $client->id,
+            'name' => $client->name,
+        ]);
+        $faultTypes = $this->faultTypeService->getAll()->map(fn($faultType) => [
+            'id' => $faultType->id,
+            'name' => $faultType->name,
+        ]);
+
         return Inertia::render('Tenant/Tickets/Create', [
-            'clients' => Client::select('id', 'name')->get(),
-            'faultTypes' => FaultType::select('id', 'name')->get(),
+            'clients' => $clients,
+            'faultTypes' => $faultTypes,
             'statuses' => collect(TicketStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => $s->label(),
