@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -19,6 +20,8 @@ return new class extends Migration
             $table->text('description');
             $table->enum('status', ['open', 'in_progress', 'closed'])->default('open');
             $table->enum('urgency', ['low', 'medium', 'high', 'critical'])->default('medium');
+            $table->text('suggested_ia_solution')->nullable();
+            $table->text('technician_solution')->nullable();
             $table->dateTime('closed_at')->nullable();
             $table->timestamps();
         });
