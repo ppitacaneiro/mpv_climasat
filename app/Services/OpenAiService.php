@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use OpenAI\OpenAI;
+use Illuminate\Support\Facades\Log;
 
 class OpenAIService
 {
@@ -15,7 +16,7 @@ class OpenAIService
 
     public function generarTicketHVAC(string $conversation): array
     {
-        \Log::info('Generando ticket HVAC con OpenAI', ['conversation' => $conversation]);
+        Log::info('Generando ticket HVAC con OpenAI', ['conversation' => $conversation]);
 
         $prompt = <<<EOT
         Eres un asistente especializado en SAT HVAC.
@@ -63,7 +64,7 @@ class OpenAIService
             $data = json_decode($output, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                \Log::error('OpenAI JSON decode error', [
+                Log::error('OpenAI JSON decode error', [
                     'error' => json_last_error_msg(),
                     'raw' => $output,
                 ]);
@@ -76,7 +77,6 @@ class OpenAIService
                 ];
             }
 
-            // Asegurarse que pregunta_siguiente existe
             if (!array_key_exists('pregunta_siguiente', $data)) {
                 $data['pregunta_siguiente'] = '¿El equipo llega a encender o no hace nada?';
             }
@@ -84,7 +84,7 @@ class OpenAIService
             return $data;
 
         } catch (\Throwable $e) {
-            \Log::error('OpenAI request failed', ['message' => $e->getMessage()]);
+            Log::error('OpenAI request failed', ['message' => $e->getMessage()]);
 
             return [
                 'tipo_averia' => '',
