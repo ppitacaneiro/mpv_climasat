@@ -16,6 +16,8 @@ class Ticket extends Model
         'status',
         'urgency',
         'closed_at',
+        'suggested_ia_solution',
+        'technician_solution',
     ];
 
     protected $casts = [
