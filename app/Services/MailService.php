@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Tenant;
+use App\Models\Tenant\Ticket;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Mail\Message;
 
@@ -50,6 +51,23 @@ class MailService
         Mail::send('emails.invoice', $invoiceData, function (Message $message) use ($clientEmail, $clientName) {
             $message->to($clientEmail, $clientName)
                     ->subject('Tu factura - ClimaSAT');
+        });
+    }
+
+    /**
+     * Send ticket notification to tenant administrator (tenant context).
+     */
+    public function sendTicketOpened(string $adminEmail, string $adminName, Ticket $ticket): void
+    {
+        $domain = tenant()->domains->first()?->domain;
+
+        Mail::send('emails.ticket-opened', [
+            'ticket' => $ticket,
+            'adminName' => $adminName,
+            'accessUrl' => $domain ? "http://{$domain}/tickets/{$ticket->id}/edit" : null,
+        ], function (Message $message) use ($adminEmail, $adminName) {
+            $message->to($adminEmail, $adminName)
+                    ->subject('Nuevo ticket creado - ClimaSAT');
         });
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Services\TenantService;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
@@ -18,7 +19,8 @@ class TicketAiService
         private TicketService $ticketService,
         private OpenAIService $openAIService,
         private TwilioService $twilioService,
-        private FaultTypeService $faultTypeService
+        private FaultTypeService $faultTypeService,
+        private MailService $mailService,
     )
     {}
 
@@ -59,7 +61,9 @@ class TicketAiService
 
             if (strtolower($body) === 'terminar') {
                 $ticket->update(['status' => 'in_progress']);
+                
 
+                // TODO: Update ticket information with IA solution
                 $this->twilioService->sendWhatsAppMessageToClient(
                     $client,
                     $tenant,
@@ -89,6 +93,10 @@ class TicketAiService
                     'suggested_ia_solution' => $iaTicketData['solucion_sugerida'] ?? null,
                     'status'                => 'in_progress',
                 ]);
+
+                // TODO: Extract this to UserService and find a better way to get an admin user
+                $user = User::where('role', 'admin')->first();
+                $this->mailService->sendTicketOpened($user->email, $user->name, $ticket);
 
                 $message = "Gracias {$client->name}, ya tenemos la información necesaria. "
                             . "Un técnico se pondrá en contacto contigo en breve.";
