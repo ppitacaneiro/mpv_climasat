@@ -49,17 +49,17 @@ function handleImageError() {
             <template v-else>
               <Link
                 :href="route('login')"
-                class="rounded-md px-3 py-2 text-white ring-1 ring-transparent transition hover:text-black/70 focus:outline-none dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:scale-105 transition transform m-3"
               >
-                Log in
+                Iniciar sesión
               </Link>
 
               <Link
                 v-if="canRegister"
                 :href="route('register')"
-                class="rounded-md px-3 py-2 text-white ring-1 ring-transparent transition hover:text-black/70 focus:outline-none dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:scale-105 transition transform m-3"
               >
-                Register
+                Registrarse
               </Link>
             </template>
           </nav>
@@ -89,9 +89,8 @@ function handleImageError() {
               </div>
               <div class="md:w-1/2 mt-12 md:mt-0 flex justify-center">
                 <img
-                  src="https://via.placeholder.com/450x350"
+                  src="images/dashboard-mockup.png"
                   alt="App Dashboard"
-                  class="rounded-2xl shadow-2xl"
                 />
               </div>
             </div>
@@ -121,7 +120,7 @@ function handleImageError() {
               </div>
               <div class="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
                 <img
-                  src="https://via.placeholder.com/80"
+                  src="images/papers.png"
                   class="mx-auto mb-4"
                   alt="Icono papeles"
                 />
