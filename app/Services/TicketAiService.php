@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Tenant\FaultType;
 use App\Services\TenantService;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\TicketService;
