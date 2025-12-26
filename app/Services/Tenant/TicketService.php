@@ -5,7 +5,6 @@ namespace App\Services\Tenant;
 use App\Models\Tenant\Ticket;
 use App\Models\Tenant\Client;
 use App\Models\Tenant\Technician;
-use App\Models\Tenant\FaultType;
 use Illuminate\Support\Collection;
 use App\Models\Tenant\TicketAiMessage;
 

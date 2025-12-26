@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\TicketStatus;
 use App\Enums\TicketUrgency;
+use Illuminate\Database\Eloquent\Builder;
 
 class Ticket extends Model
 {
@@ -41,6 +42,26 @@ class Ticket extends Model
     public function getUrgencyLabelAttribute(): string
     {
         return $this->urgency->label();
+    }
+
+    /**
+     * Scope: búsqueda global de tickets
+     */
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        return $query->where(function (Builder $q) use ($search) {
+            $q->where('description', 'like', "%{$search}%")
+            ->orWhereHas('client', function (Builder $q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+                $q->orWhere('phone', 'like', "%{$search}%");
+            })
+            ->orWhereHas('technician', function (Builder $q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+            ->orWhereHas('faultType', function (Builder $q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        });
     }
 
     /**
