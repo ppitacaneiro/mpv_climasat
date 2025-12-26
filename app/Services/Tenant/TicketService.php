@@ -62,7 +62,7 @@ class TicketService
      */
     public function findById(int $id): ?Ticket
     {
-        return Ticket::find($id);
+        return Ticket::with(['client', 'technician', 'faultType', 'aiMessages'])->find($id);
     }
 
     /**

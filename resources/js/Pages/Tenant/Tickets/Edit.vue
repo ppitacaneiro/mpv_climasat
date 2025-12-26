@@ -1,134 +1,156 @@
+<template>
+  <TenantLayout :tenant="tenant" :user="user">
+    <div class="max-w-3xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
+      <h1 class="text-2xl font-semibold mb-6 text-gray-800">
+        Editar Ticket #{{ ticket.id }}
+      </h1>
+
+      <form @submit.prevent="submit" class="space-y-5">
+
+        <!-- Cliente -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Cliente
+          </label>
+          <Dropdown
+            v-model="form.client_id"
+            :options="clients"
+            optionLabel="name"
+            optionValue="id"
+            class="w-full"
+            disabled
+          />
+        </div>
+
+        <!-- Tipo de avería -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Tipo de avería
+          </label>
+          <Dropdown
+            v-model="form.fault_type_id"
+            :options="faultTypes"
+            optionLabel="name"
+            optionValue="id"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Descripción
+          </label>
+          <Textarea
+            v-model="form.description"
+            rows="4"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Sugerencia IA -->
+        <div v-if="ticket.suggested_ia_solution">
+          <label class="block mb-1 font-medium text-gray-700">
+            Sugerencia de la IA
+          </label>
+          <Textarea
+            v-model="form.suggested_ia_solution"
+            rows="4"
+            class="w-full bg-gray-50"
+            readonly
+          />
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Estado
+          </label>
+          <Dropdown
+            v-model="form.status"
+            :options="statuses"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Urgencia -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Urgencia
+          </label>
+          <Dropdown
+            v-model="form.urgency"
+            :options="urgencies"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Solución técnico -->
+        <div>
+          <label class="block mb-1 font-medium text-gray-700">
+            Solución del técnico
+          </label>
+          <Textarea
+            v-model="form.technician_solution"
+            rows="4"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end gap-3 pt-4">
+          <Button
+            label="Cancelar"
+            class="px-6 py-2 border border-gray-300 text-gray-700"
+            @click="router.visit(route('tickets.index'))"
+          />
+          <Button
+            label="Actualizar"
+            type="submit"
+            :loading="form.processing"
+            class="px-6 py-2 bg-blue-600 text-white"
+          />
+        </div>
+
+      </form>
+    </div>
+  </TenantLayout>
+</template>
+
 <script setup>
-import { ref } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import TenantLayout from '@/Layouts/TenantLayout.vue'
-import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Dropdown from 'primevue/dropdown'
 import Button from 'primevue/button'
 
-// Recibimos props con tenant, user y cliente a editar
 const props = defineProps({
-    tenant: Object,
-    user: Object,
-    client: Object, // cliente a editar
+  tenant: Object,
+  user: Object,
+  ticket: Object,
+  clients: Array,
+  faultTypes: Array,
+  statuses: Array,
+  urgencies: Array,
 })
 
-// Inicializamos useForm con los datos del cliente
 const form = useForm({
-    name: props.client.name || '',
-    tax_id: props.client.tax_id || '',
-    contact: props.client.contact || '',
-    phone: props.client.phone || '',
-    email: props.client.email || '',
-    address: props.client.address || '',
-    history: props.client.history || '',
+  client_id: props.ticket.client_id,
+  fault_type_id: props.ticket.fault_type_id,
+  description: props.ticket.description,
+  status: props.ticket.status,
+  urgency: props.ticket.urgency,
+  technician_solution: props.ticket.technician_solution,
+  suggested_ia_solution: props.ticket.suggested_ia_solution,
 })
 
-// Función de envío para actualizar
 const submit = () => {
-    form.put(route('clients.update', props.client.id), {
-        onSuccess: () => console.log('Cliente actualizado'),
-    })
+  form.put(route('tickets.update', props.ticket.id), {
+    preserveScroll: true,
+  })
 }
 </script>
-
-<template>
-    <TenantLayout :tenant="tenant" :user="user">
-        <!-- Card -->
-        <div class="max-w-2xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
-            <h1 class="text-2xl font-semibold mb-6 text-gray-800">
-                Editar Cliente
-            </h1>
-
-            <div v-if="form.errors.general" class="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-red-700">
-                {{ form.errors.general }}
-            </div>
-
-            <form @submit.prevent="submit" class="space-y-5">
-                <!-- Nombre -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Nombre <span class="text-red-500">*</span>
-                    </label>
-                    <InputText v-model="form.name" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    <span v-if="form.errors.name" class="text-red-500 text-sm">
-                        {{ form.errors.name }}
-                    </span>
-                </div>
-
-                <!-- CIF / NIF -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        CIF / NIF
-                    </label>
-                    <InputText v-model="form.tax_id" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-
-                <!-- Persona de contacto -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Persona de contacto
-                    </label>
-                    <InputText v-model="form.contact" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-
-                <!-- Teléfono -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Teléfono <span class="text-red-500">*</span>
-                    </label>
-                    <InputText v-model="form.phone" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    <span v-if="form.errors.phone" class="text-red-500 text-sm">
-                        {{ form.errors.phone }}
-                    </span>
-                </div>
-
-                <!-- Email -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Email
-                    </label>
-                    <InputText v-model="form.email" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-
-                <!-- Dirección -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Dirección 
-                    </label>
-                    <Textarea v-model="form.address" rows="3" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-
-                <!-- Historial -->
-                <div>
-                    <label class="block mb-1 font-medium text-gray-700">
-                        Historial
-                    </label>
-                    <Textarea v-model="form.history" rows="4" class="w-full px-4 py-2 border-2 border-blue-600 rounded-md
-                   focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-
-                <!-- Botones -->
-                <div class="flex justify-end gap-3 pt-4">
-                    <Button 
-                        label="Cancelar" 
-                        class="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100"
-                        @click="router.visit(route('clients.index'))" 
-                    />
-                    <Button 
-                        label="Actualizar" 
-                        type="submit" 
-                        :loading="form.processing"
-                        class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 shadow-md" 
-                    />
-                </div>
-            </form>
-        </div>
-    </TenantLayout>
-</template>

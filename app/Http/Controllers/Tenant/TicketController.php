@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tenant\Ticket;
 use App\Services\Tenant\TicketService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Tenant\Client;
-use App\Models\Tenant\FaultType;
 use App\Enums\TicketStatus;
 use App\Enums\TicketUrgency;
 use App\Services\Tenant\ClientService;
 use App\Services\Tenant\FaultTypeService;
+use App\Http\Requests\Tenant\StoreTicketRequest;
 
 class TicketController extends Controller
 {
@@ -79,9 +77,12 @@ class TicketController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTicketRequest $request)
     {
-        //
+        $this->ticketService->create($request->validated());
+
+        return redirect()->route('tickets.index')
+            ->with('success', 'Ticket creado exitosamente.');
     }
 
     /**
@@ -97,7 +98,33 @@ class TicketController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $clients = $this->clientService->getAll()->map(fn($client) => [
+            'id' => $client->id,
+            'name' => $client->name,
+        ]);
+        $faultTypes = $this->faultTypeService->getAll()->map(fn($faultType) => [
+            'id' => $faultType->id,
+            'name' => $faultType->name,
+        ]);
+
+        return Inertia::render('Tenant/Tickets/Edit', [
+            'ticket' => $this->ticketService->findById($id),
+            'clients' => $clients,
+            'faultTypes' => $faultTypes,
+            'statuses' => collect(TicketStatus::cases())->map(fn ($s) => [
+                'value' => $s->value,
+                'label' => $s->label(),
+            ]),
+            'urgencies' => collect(TicketUrgency::cases())->map(fn ($u) => [
+                'value' => $u->value,
+                'label' => $u->label(),
+            ]),
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**
