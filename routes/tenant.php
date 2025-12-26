@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-
 use App\Http\Controllers\Tenant\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\ClientController;
@@ -15,12 +13,35 @@ use App\Http\Controllers\Tenant\FaultTypeController;
 use App\Http\Controllers\Tenant\TicketController;
 use App\Http\Controllers\Tenant\WorkOrderController;
 use App\Http\Controllers\Tenant\InvoiceController;
+use App\Http\Controllers\Tenant\Api\AuthController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Routes
 |--------------------------------------------------------------------------
 */
+
+Route::middleware(['tenant-api'])->prefix('api')->group(function () {
+
+    /*--------------------------------------------------------------------------
+    | Tenant API Routes
+    |--------------------------------------------------------------------------*/
+    Route::get('/status', function () {
+        return response()->json(['status' => 'Tenant API is working']);
+    });
+
+    Route::post('/login', [AuthController::class, 'login'])
+        ->name('tenant.api.login');
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout'])
+            ->name('tenant.api.logout');
+        Route::get('/user', function (Request $request) {
+            return response()->json($request->user());
+        })->name('tenant.api.user');
+    });
+});
 
 Route::middleware([
     'web',

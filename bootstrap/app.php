@@ -20,6 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/twilio/webhook',
         ]);
+
+        // Tenant API middleware groups
+        $middleware->appendToGroup('tenant-api', [
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+            'api',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
