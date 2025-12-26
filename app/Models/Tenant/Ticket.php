@@ -49,6 +49,7 @@ class Ticket extends Model
      */
     public function scopeSearch(Builder $query, string $search): Builder
     {
+        // TODO: Adjust the search fields as needed in the UI
         return $query->where(function (Builder $q) use ($search) {
             $q->where('description', 'like', "%{$search}%")
             ->orWhereHas('client', function (Builder $q) use ($search) {
