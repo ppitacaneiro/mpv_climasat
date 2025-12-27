@@ -64,4 +64,9 @@ class Technician extends Model
     {
         return $this->hasMany(WorkOrder::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
