@@ -16,7 +16,10 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        $user = User::where('email', $credentials['email'])
+            ->where('role', 'technician')
+            ->with('technician')
+            ->first();
 
         if ($user && Hash::check($credentials['password'], $user->password)) {
             $token = $user->createToken('api-token')->plainTextToken;
@@ -28,7 +31,8 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                ]
+                ],
+                'technician' => $user->technician,
             ]);
         }
 
