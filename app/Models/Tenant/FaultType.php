@@ -5,6 +5,7 @@ namespace App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use App\Enums\TicketUrgency;
 
 class FaultType extends Model
 {
@@ -15,8 +16,17 @@ class FaultType extends Model
     ];
 
     protected $casts = [
-        'priority' => 'string',
+        'priority' => TicketUrgency::class,
     ];
+
+    protected $appends = [
+        'priority_label'
+    ];
+
+    public function getPriorityLabelAttribute(): string
+    {
+        return $this->priority->label();
+    }
 
     /*
     |--------------------------------------------------------------------------

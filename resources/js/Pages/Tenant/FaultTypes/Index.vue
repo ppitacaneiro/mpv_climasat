@@ -53,7 +53,7 @@
       >
         <Column field="name" header="Nombre" sortable />
         <Column field="description" header="Descripción" />
-        <Column field="priority" header="Prioridad" />
+        <Column field="priority_label" header="Prioridad" />
 
         <Column header="Acciones" :style="{ width: '160px' }">
           <template #body="{ data }">
