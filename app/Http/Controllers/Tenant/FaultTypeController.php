@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Tenant\FaultTypeService;
 use Inertia\Inertia;
+use App\Enums\TicketUrgency;
 
 class FaultTypeController extends Controller
 {
@@ -38,7 +39,17 @@ class FaultTypeController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Tenant/FaultTypes/Create', [
+            'priorities' => collect(TicketUrgency::cases())->map(fn ($u) => [
+                'value' => $u->value,
+                'label' => $u->label(),
+            ]),
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**
