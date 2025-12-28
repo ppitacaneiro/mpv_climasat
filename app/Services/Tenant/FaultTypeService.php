@@ -22,4 +22,9 @@ class FaultTypeService {
         return $faultTypes;
     }
 
+    public function store(array $data): FaultType
+    {
+        return FaultType::create($data);
+    }
+
 }

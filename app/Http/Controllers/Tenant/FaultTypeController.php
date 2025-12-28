@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\Tenant\FaultTypeService;
 use Inertia\Inertia;
 use App\Enums\TicketUrgency;
+use App\Http\Requests\Tenant\StoreFaultTypeRequest;
 
 class FaultTypeController extends Controller
 {
@@ -55,9 +56,11 @@ class FaultTypeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreFaultTypeRequest $request)
     {
-        //
+        $this->faultTypeService->store($request->validated());
+
+        return redirect()->route('fault-types.index')->with('success', 'Tipo de avería creado exitosamente.');
     }
 
     /**
