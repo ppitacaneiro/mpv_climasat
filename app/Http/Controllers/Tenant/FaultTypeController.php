@@ -4,15 +4,33 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\Tenant\FaultTypeService;
+use Inertia\Inertia;
 
 class FaultTypeController extends Controller
 {
+    public function __construct(private FaultTypeService $faultTypeService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $faultTypes = $this->faultTypeService->index($request->get('search'));
+
+        return Inertia::render('Tenant/FaultTypes/Index', [
+            'faultTypes' => $faultTypes,
+            'filters' => [
+                'search' => $request->get('search'),
+            ],
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**

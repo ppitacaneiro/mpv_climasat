@@ -10,4 +10,16 @@ class FaultTypeService {
     {
         return FaultType::all();
     }
+
+    public function index($search = null)
+    {
+        $faultTypes = FaultType::query()
+            ->when($search, fn($query) => $query->search($search))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        return $faultTypes;
+    }
+
 }
