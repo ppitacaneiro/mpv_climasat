@@ -27,4 +27,9 @@ class FaultTypeService {
         return FaultType::create($data);
     }
 
+    public function findById(int $id): ?FaultType
+    {
+        return FaultType::findOrFail($id);
+    }
+
 }

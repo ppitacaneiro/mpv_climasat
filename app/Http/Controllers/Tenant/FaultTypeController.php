@@ -76,7 +76,18 @@ class FaultTypeController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return Inertia::render('Tenant/FaultTypes/Edit', [
+            'faultType' => $this->faultTypeService->findById($id),
+            'priorities' => collect(TicketUrgency::cases())->map(fn ($u) => [
+                'value' => $u->value,
+                'label' => $u->label(),
+            ]),
+            'tenant' => [
+                'id' => tenant('id'),
+                'name' => tenant('name'),
+            ],
+            'user' => auth()->user(),
+        ]);
     }
 
     /**
